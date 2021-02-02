@@ -374,6 +374,7 @@ library(tidyverse)
 # d <- igp_sim(k = 100, n_0 = c(100, 50, 20),
 #              p_disturb = 0.0001)
 # igp_sim(n_patch = 100, k = 100)
+<<<<<<< HEAD
 
 
 igp_sim2 <- function(n_patch = 20,
@@ -641,3 +642,5 @@ igp_sim2 <- function(n_patch = 20,
   return(list(sp_dynamics = dat,
               fcl = fcl_df))
 }
+=======
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85

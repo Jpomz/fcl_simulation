@@ -28,6 +28,7 @@ The predator species consumes both B and C, and responds to each following a typ
 
 The model starts with some initial nonzero population abundances for all three species in each patch. First, dispersal from all patches is accounted for. The number of emmigrants, E, for each species from each patch is estimated, Then, the number of emmigrants from patch i is divided into immigrants, I, for each patch j. The likelihood of an individual dispersal from patch i to j declines exponentially with increasing distance from patch i to j. 
 
+<<<<<<< HEAD
 The probability that an individual disperses can be set with `p_dispersal`. A single value can be used for all trophic levels, or can be set for each individually. 
 
 ***
@@ -49,10 +50,26 @@ The total number of Basal species individual eaten is the sum of the individuals
 $$W_{B} = W_{BC} +W_{CP} $$
 
 ##Survival
+=======
+The probability that an individual disperses can be set with p_{dispersal}. A single value can be used for all trophic levels, or can be set for each individually. 
+
+## Predation
+
+After dispersal, continuous predation occurs. The number of prey *i* eaten by consumer *j*, *W_{ij}*, in a season is calculated as:
+
+$$W_{ij} = \frac{\alpha_{ij}  N_{i}  N_{j}} {\beta_{ij}  N_{j} + N_{i}}$$
+
+where *N_{i}* is the population abundance of resource *i*, *N_{j}* is the population abundance of consumer *i*, and $\alpha_{ij}$ and $\beta_{ij}$ are coefficients describing the functional response as the ratio of resources to consumers increases.  $\beta_{ij}$ describes how fast the predation curve reaches the asymptote of the type II functional response, and $\frac{\alpha}{\beta}$ determines the location of the asymptote. 
+
+The total number of Basal species individual eaten is the sum of the individuals eaten by C and P:
+$$W_{B} = W_{BC} +W_{CP} $$
+## Survival
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 
 After accounting for predation, the remaining individuals are reduced by the base survival probability:
 
 
+<<<<<<< HEAD
 $$
 \begin{aligned}
 B' = &S_{0}(B - W_{B})\\
@@ -98,25 +115,68 @@ $$X_{i} \sim \text{Poisson}(\lambda_{i})$$
 
 where $\lambda$ is a vector of values for each species:
 
+=======
+\begin{align}
+B' = S_{0}(B - W_{B})\\
+C' = S_{0}(C - W_{CP})\\
+P' = S_{0}P 
+\end{align}
+
+
+## Reproduction
+
+Finally, those individuals remaining ($X_{i}'$) reproduce according to the following:
+\begin{align}
+B_{t+1} = \frac{r_{max}}{1 + bB'}B'\\
+C_{t+1} = \frac{e_{bc} \alpha_{bc} B }{ \beta_{bc} C + B}C'\\
+P_{t+1} = \left(\frac{e_{bp} \alpha_{bp} B } {\beta_{bp}P +B} +
+\frac{e_{bp} \alpha_{bp} C}{\beta_{bp}P + C}\right) P'
+\end{align}
+
+where $r_{max}$ is the maximum per-capita reproduction rate of the basal species and $b = \frac{r_{max} - 1}{K}$ determines the asymptotic relationship of population growth, where K is carrying capacity. In the absence of predation, population growth of the basal species follows a logistic growth relationship. Note the use of $X_{i}$ in determining the predation effects (terms inside of the parentheses) and $X_{i}'$ to estimate reproduction in the next generation. This can be viewed as a time lag, which incorporates continuous predation through the season, and synchronous reproduction only for the surviving individuals. 
+
+For the consumer species (C and P) the product of $e_{ij}\alpha_{ij}$ is the maximum reproductive rate of consumer *j* on resource *i*. The carying capacity of consumer *j* on resource *i* is $\frac{N_{i}(e_{ij}\alpha_{ij} - 1)} {\beta_{ij}}$ when N_{i} is constant 
+
+## Time t + 1
+
+To ensure that the number of individuals in time t + 1 is an integer and to include stochasticity in our model, the population abundance for t + 1 is drawn from a Poisson distribution:
+$$X_{i} \sim \text{Poisson}(\lambda_{i})$$
+
+where 
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 $$\lambda_{i} = B_{t+1}, C_{t+1}, P_{t+1}$$ 
 
 ## Disturbance
 
+<<<<<<< HEAD
 We also include a disturbance probability `p_disturb`, which determines the probability of a disturbance occurring in patch $X$ at time $t$. If a disturbance occurs, the abundance of each species is reduced by the value set with `mag_disturb` e.g., `mag_disturb = 0.25` a disturbance in a patch reduces the abundance of all species by 25%.
 
 Disturbance correlation. The correlation value can be set such that if one patch undergoes a disturbance as described above, then patches located nearby (euclidean distance, same branch, etc.) are also more likely to undergo that disturbance. This can be viewed as a flood disturbance through a river branch, or a large storm even across a 2-dimensional landscape.
 *NOTE*: correlation is not yet implemented. 
+=======
+We also include a disturbance probability $\mathrm{p}_{disturbance}$ which reduces the abundance of each species present in patch x at time i by some constant value (e.g., if disturbance occurs, populations are reduced by 50%).
+
+Disturbance correlation. The correlation value can be set such that if one patch undergoes a disturbance as described above, then patches located nearby (euclidean distance, same branch, etc.) are also more likely to undergo that disturbance. This can be viewed as a flood disturbance through a river branch, or a large storm even across a 2-dimensional landscape. 
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 
 ## Resource extinction
 
 An explicit assumption of our model is that the presence of a consumer is dependent on the presence of at least one of its' resources. Therefore, if the population abundance of B is equal to 0 at the beginning of a timestep, we force the abundances of C and P to also equal zero. Note that C and P can become locally extinct and the simulation will continue as normal, and any secondary extinctions are the direct result of trophic dynamics.
 
+<<<<<<< HEAD
 ## FCL: Food Chain Length
+=======
+## food chain length
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 
 There are 5 possible outcomes, and their corresponding food chain lengths
 
 - all species are extinct FCL = 0
+<<<<<<< HEAD
 - B only        FCL = 1
+=======
+- B present     FCL = 1
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 - B + C         FCL = 2
 - B + P         FCL = 2.5
 - B + C + P     FCL = 3
@@ -125,7 +185,10 @@ There are 5 possible outcomes, and their corresponding food chain lengths
 ## Environment
 
 The carrying capacity, K, is a function which is determined by ecosystem area (i.e., number of patches upstream) or some environmental condition. If determined by environmental condition, patches can either be randomly assigned a value, or can be spatially auto-correlated, such that nearby patches are more likely to have similar environmental values. 
+<<<<<<< HEAD
 *NOTE*: this is a work in progress.
+=======
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 
 # Simulation function `igp_sim()`
 
@@ -139,7 +202,11 @@ The initial population abundances can be st with the `n_0` argument. The default
 
 The probability that and individual will disperse from a patch is set with the `p_dispersal` argument, and can take values from 0 to 1. If one value is supplied it as applied to all three species, otherwise a vector of length 3 can be used to set probabilities for species B, C and P (in that order). The `theta` argument determines how quickly dispersal ability declines with increasing distance (higher values of `theta` means individuals will disperse shorter distances). Currently, only one value of theta is applied to all three species. 
 
+<<<<<<< HEAD
 Trophic dynamics are determined with the arguments `eij`, `alphaij` and `betaij`, where *ij* describes the relationship between resource *i* and consumer *j*. `eij` refers to the conversion efficiency, and `alphaij` and `betaij` are parameters controlling the type II functional response. 
+=======
+Trophic dynamics are determined with the arguments `e{ij}`, `alpha{ij}` and `beta{ij}`, where *{ij}* describes the relationship between resource *i* and consumer *j*. `e{ij}` refers to the conversion efficiency, and `alpha{ij}` and `beta{ij}` are parameters controlling the type II functional response. 
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 
 The `s0` argument controls the base survival probability. Currently it sets the same survival probability for all species. 
 
@@ -193,7 +260,11 @@ The arguments controlling the trophic dynamics are currently set to maximize sta
 set.seed(1222) # for reproducibility
 d <- igp_sim(n_patch = 100, 
              p_dispersal = 0,
+<<<<<<< HEAD
              mag_disturb = 0, # disturbance does not reduce population                                     abundances
+=======
+             mag_disturb = 1, # disturbance does not reduce population                                     abundances
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              plot_disturbance = FALSE,
              plot_patch_dynamics = FALSE)
 ```
@@ -206,7 +277,11 @@ set.seed(1222)
 d <- igp_sim(n_0 = 100, # start all at 100
              n_patch = 100, 
              p_dispersal = 0,
+<<<<<<< HEAD
              mag_disturb = 0, # disturbance does not reduce population                                     abundances
+=======
+             mag_disturb = 1, # disturbance does not reduce population                                     abundances
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              plot_disturbance = FALSE,
              plot_patch_dynamics = TRUE)
 ```
@@ -215,7 +290,11 @@ set.seed(1222)
 d <- igp_sim(n_0 = c(100, 200, 50), 
              n_patch = 100, 
              p_dispersal = 0,
+<<<<<<< HEAD
              mag_disturb = 0, # disturbance does not reduce population                                     abundances
+=======
+             mag_disturb = 1, # disturbance does not reduce population                                     abundances
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              plot_disturbance = FALSE,
              plot_patch_dynamics = TRUE)
 ```
@@ -226,7 +305,11 @@ Keeping dispersal and disturbance low, we can modify the strength of the trophic
 set.seed(1222) # for reproducibility
 d <- igp_sim(n_patch = 100, 
              p_dispersal = 0,
+<<<<<<< HEAD
              mag_disturb = 0, # disturbance does not reduce population                                     abundances
+=======
+             mag_disturb = 1, # disturbance does not reduce population                                     abundances
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              alphabp = 10,# P much stronger competitor
              plot_disturbance = FALSE,
              plot_patch_dynamics = FALSE)
@@ -258,7 +341,11 @@ Here we can see that the green species (C) often goes extinct, and the blue spec
 set.seed(1222)
 d <- igp_sim(n_patch = 100, 
              p_dispersal = 0.1, # 10% individuals leave per time
+<<<<<<< HEAD
              mag_disturb = 0, 
+=======
+             mag_disturb = 1, 
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              alphabp = 10,
              plot_disturbance = FALSE,
              plot_patch_dynamics = TRUE,
@@ -273,15 +360,23 @@ Increasing the frequency and magnitude of disturbance with no dispersal casues m
 set.seed(1222)
 d <- igp_sim(n_patch = 100, 
              p_dispersal = 0,
+<<<<<<< HEAD
              p_disturb = 1e-2, # increasing disturbance frequency
+=======
+             p_disturb = 1e-2, # increasing frequency
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              mag_disturb = 0.75, # reduce population by 75%
              plot_disturbance = FALSE,
              plot_patch_dynamics = TRUE,
              plot_fcl = TRUE)
 ```
 
+<<<<<<< HEAD
 Disturbance + Dispersal
 
+=======
+Disturbance + dispersal
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
 
 ```{r}
 set.seed(1222)
@@ -301,7 +396,11 @@ Increase alpha (higher reproduction) and decrease beta (higher K) creates chaoti
 ```{r}
 set.seed(1222)
 d <- igp_sim(n_patch = 100, 
+<<<<<<< HEAD
              p_dispersal = 0.1, # dispersal is on
+=======
+             p_dispersal = 0.1,
+>>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
              mag_disturb = 0.75, # reduce population by 75%
              alphabc = 6,
              alphabp = 10,
