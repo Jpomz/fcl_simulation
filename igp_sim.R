@@ -105,7 +105,8 @@ fcl_prop <- function(fcl){
 # i.e. p_dispersal = 0.01, theta = 100
 # strength of dispersal decline with distance
 
-igp_sim <- function(n_patch = 20,
+# igp_sim2() was the original formulation and I know it works, retaining here for the time being. 
+igp_sim2 <- function(n_patch = 20,
                     n_0 = NULL,
                     dist_mat = NULL,
                     k_function = NULL, #c("patches upstream", "random", "auto-correlated")
@@ -127,7 +128,7 @@ igp_sim <- function(n_patch = 20,
                     betabc = 20,
                     betabp = 35,
                     betacp = 20,
-                    so = 0.75,
+                    s0 = 0.75,
                     p_disturb = 1e-4,
                     mag_disturb = 0.5,
                     t = 1000,
@@ -237,9 +238,9 @@ library(tidyverse)
     wcp = alphacp*N[2,]*N[3,]/(betacp*N[3,]+N[2,])
     
     # survival
-    B_prime = so*(N[1,] - wbc- wbp)
-    C_prime = so*(N[2,] - wcp)
-    P_prime = so*N[3,]
+    B_prime = s0*(N[1,] - wbc- wbp)
+    C_prime = s0*(N[2,] - wcp)
+    P_prime = s0*N[3,]
     
     # reproduction
     B_t1 = (r_max / (1+b*B_prime))*B_prime
@@ -349,23 +350,25 @@ library(tidyverse)
         select(patch) %>% unique() %>% pull()
       dist_dat <- filter(dat, patch %in% dist_patch)
       dist_point <- dplyr::filter(dat, disturbance == 1)
-      dist_plot <- ggplot(dist_dat, 
-                           aes(y = value,
-                               x = time, 
-                               color = species))+
-        geom_line() +
-        geom_point(inherit.aes = FALSE,
-                   data = dist_point,
-                   mapping = aes(x = time,
-                                 y = -15),
-                   shape = 2,
-                   size = 2) +
-        facet_wrap(.~patch, labeller = label_both) +
-        labs(y = "Abundance",
-             title = "All patches experiencing disturbances") +
-        theme_bw() +
-        NULL
-      print(dist_plot)
+      if(nrow(dist_dat) >0){
+        dist_plot <- ggplot(dist_dat, 
+                            aes(y = value,
+                                x = time, 
+                                color = species))+
+          geom_line() +
+          geom_point(inherit.aes = FALSE,
+                     data = dist_point,
+                     mapping = aes(x = time,
+                                   y = -15),
+                     shape = 2,
+                     size = 2) +
+          facet_wrap(.~patch, labeller = label_both) +
+          labs(y = "Abundance",
+               title = "All patches experiencing disturbances") +
+          theme_bw() +
+          NULL
+        print(dist_plot)
+      } else {message("No disturbances occured")}
     }
   return(list(sp_dynamics = dat,
               fcl = fcl_df))
@@ -374,10 +377,9 @@ library(tidyverse)
 # d <- igp_sim(k = 100, n_0 = c(100, 50, 20),
 #              p_disturb = 0.0001)
 # igp_sim(n_patch = 100, k = 100)
-<<<<<<< HEAD
 
 
-igp_sim2 <- function(n_patch = 20,
+igp_sim <- function(n_patch = 20,
                     n_0 = NULL,
                     dist_mat = NULL,
                     k_function = NULL, #c("patches upstream", "random", "auto-correlated")
@@ -390,11 +392,15 @@ igp_sim2 <- function(n_patch = 20,
                     p_dispersal = 0.1,
                     theta = 1,
                     r_max = 2.5,
-                    erc = 2,
-                    alpha = 4,
-                    beta = 20,
+                    ebc = 2,
+                    ebp = 2,
+                    ecp = 2,
+                    alphabc = 4,
+                    alphap = 4,
+                    betabc = 20,
+                    betap = 20,
                     P_pref = 0.25, # preference of B over C
-                    so = 0.75,
+                    s0 = 0.75,
                     p_disturb = 1e-4,
                     mag_disturb = 0.5,
                     t = 1000,
@@ -412,7 +418,7 @@ igp_sim2 <- function(n_patch = 20,
   ## Dispersal ##
   # distance matrix
   if(is.null(dist_mat)){
-    print("No distance matrix supplied, assuming 10x10 square landscape")
+    message("No distance matrix supplied, assuming 10x10 square landscape")
     x_coord = runif(n_patch, 0, 10)
     y_coord = runif(n_patch, 0, 10)
     dist_mat = data.matrix(dist(cbind(x_coord, y_coord),
@@ -435,7 +441,7 @@ igp_sim2 <- function(n_patch = 20,
   ## carrying capacity ##
   if(is.null(k_function)){
     if(length(k) == 1){
-      print("only one value of k supplied, assuming it is the same in all patches")
+      message("only one value of k supplied, assuming it is the same in all patches")
       b = (r_max - 1) /k
     }} else{  # for branching rier networks
       if(k_function == "patches upstream"){
@@ -499,24 +505,24 @@ igp_sim2 <- function(n_patch = 20,
                 nrow = n_sp, ncol = n_patch)
     
     # predation ####
-    wbc = alpha * N[1,]*N[2,] / (beta*N[2,] + N[1,])
-    wbp = P_pref * (alpha *N[1,]*N[3,]/(beta*N[3,] +N[1,]))
-    wcp = (1 - P_pref) * (alpha*N[2,]*N[3,]/(beta*N[3,]+N[2,]))
+    wbc = alphabc * N[1,]*N[2,] / (betabc*N[2,] + N[1,])
+    wbp = P_pref * (alphap *N[1,]*N[3,]/(betap*N[3,] +N[1,]))
+    wcp = (1 - P_pref) * (alphap*N[2,]*N[3,]/(betap*N[3,]+N[2,]))
     
     # survival ####
-    B_prime = so*(N[1,] - wbc - wbp)
-    C_prime = so*(N[2,] - wcp)
-    P_prime = so*N[3,]
+    B_prime = s0*(N[1,] - wbc - wbp)
+    C_prime = s0*(N[2,] - wcp)
+    P_prime = s0*N[3,]
     
     # reproduction ####
     B_t1 = (r_max / (1+b*B_prime))*B_prime
-    C_t1 = (erc*alpha*N[1,] / 
-              (beta*N[2,] + N[1,])) * # B converted to C
+    C_t1 = (ebc*alphabc*N[1,] / 
+              (betabc*N[2,] + N[1,])) * # B converted to C
       C_prime # number of C 
-    P_t1 = ((P_pref * (erc*alpha*N[1,] / 
-               (beta*N[3,] + N[1,]))) + # B converted to P
-              ((1 - P_pref) * (erc*alpha*N[2,] / 
-                 (beta*N[3,] + N[2,])))) * # C converted to P
+    P_t1 = ((P_pref * (ebp*alphap*N[1,] / 
+               (betap*N[3,] + N[1,]))) + # B converted to P
+              ((1 - P_pref) * (ecp*alphap*N[2,] / 
+                 (betap*N[3,] + N[2,])))) * # C converted to P
       P_prime # number of P
     
     # B_t1[is.nan(B_t1)] <- 0
@@ -530,7 +536,8 @@ igp_sim2 <- function(n_patch = 20,
     N[N <0 ] <- 0
     
     # Disturbance - reduce patch abundance by some proportion
-    patch_extinction <- rbinom(n = n_patch, size = 1, prob = p_disturb)
+    patch_extinction <- rbinom(n = n_patch,
+                               size = 1, prob = p_disturb)
     N[,which(patch_extinction==1)] <- 
       N[,which(patch_extinction==1)] * (1 - mag_disturb)
     
@@ -560,6 +567,11 @@ igp_sim2 <- function(n_patch = 20,
   
   fcl_df <- data.frame(bind_rows(fcl_list), time = 2:t)
   fcl_df <- pivot_longer(fcl_df, 1:5, names_to = "fcl_state")
+  param_df <- data.frame(
+    alphabc = alphabc, betabc = betabc, ebc = ebc,
+    alphap = alphap, betap = betap, ebp = ebp, ecp =ecp, P_pref = P_pref,
+    p_dispersal = p_dispersal, s0 = s0,
+    p_disturb = p_disturb, mag_disturb = mag_disturb)
   
   
   # Plots -------------------------------------------------------------------
@@ -621,26 +633,28 @@ igp_sim2 <- function(n_patch = 20,
       select(patch) %>% unique() %>% pull()
     dist_dat <- filter(dat, patch %in% dist_patch)
     dist_point <- dplyr::filter(dat, disturbance == 1)
-    dist_plot <- ggplot(dist_dat, 
-                        aes(y = value,
-                            x = time, 
-                            color = species))+
-      geom_line() +
-      geom_point(inherit.aes = FALSE,
-                 data = dist_point,
-                 mapping = aes(x = time,
-                               y = -15),
-                 shape = 2,
-                 size = 2) +
-      facet_wrap(.~patch, labeller = label_both) +
-      labs(y = "Abundance",
-           title = "All patches experiencing disturbances") +
-      theme_bw() +
-      NULL
-    print(dist_plot)
+    if(nrow(dist_dat) >0){
+      dist_plot <- ggplot(dist_dat, 
+                          aes(y = value,
+                              x = time, 
+                              color = species))+
+        geom_line() +
+        geom_point(inherit.aes = FALSE,
+                   data = dist_point,
+                   mapping = aes(x = time,
+                                 y = -15),
+                   shape = 2,
+                   size = 2) +
+        facet_wrap(.~patch, labeller = label_both) +
+        labs(y = "Abundance",
+             title = "All patches experiencing disturbances") +
+        theme_bw() +
+        NULL
+      print(dist_plot)
+    } else {message("No disturbances occured")}
   }
   return(list(sp_dynamics = dat,
-              fcl = fcl_df))
+              fcl = fcl_df,
+              sim_params = param_df))
 }
-=======
->>>>>>> 5f92ca836e7cefaec374c026ae85c0d882085d85
+
